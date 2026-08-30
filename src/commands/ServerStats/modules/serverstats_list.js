@@ -52,7 +52,7 @@ export async function handleList(interaction, client) {
 
             embed.addFields({
                 name: "**Available Counter Types**",
-                value: "**Members + Bots** - Total server members\n **Members Only** - Human members only\n **Bots Only** - Bot members only",
+                value: "**Members + Bots** : Total server members\n **Members Only** : Human members only\n **Bots Only** : Bot members only",
                 inline: false
             });
 

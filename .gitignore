@@ -87,14 +87,6 @@ web_modules/
 .env.production.local
 .env.local
 
-.env
-.env.*
-!.env.example
-
-node_modules/
-logs/
-*.log
-
 # parcel-bundler cache (https:
 .cache
 .parcel-cache

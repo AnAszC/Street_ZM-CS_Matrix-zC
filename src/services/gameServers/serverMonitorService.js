@@ -1,63 +1,44 @@
-import {
-    GAME_SERVERS
-} from './serverConfig.js';
+const { fetchServerInfo } = require('./gameQueryService');
+const { buildServerEmbed } = require('./serverEmbed');
+const { servers, updateInterval } = require('./serverConfig');
 
-import {
-    queryGameServer
-} from './gameQueryService.js';
-
-import {
-    createServerEmbed,
-    createServerButtons
-} from './serverEmbed.js';
-
-export async function updateGameServerMessage(
-    client,
-    channelId,
-    messageId,
-    serverId
-) {
-
-    const server =
-        GAME_SERVERS.find(
-            item => item.id === serverId
-        );
-
-    if (!server) {
-        throw new Error(
-            `Game server "${serverId}" not found`
-        );
+class ServerMonitorService {
+    constructor(client) {
+        this.client = client;
+        this.messages = new Map(); // تخزين معرفات الرسائل للتحديث
+        this.startMonitoring();
     }
 
-    const channel =
-        await client.channels.fetch(channelId);
-
-    if (!channel) {
-        throw new Error(
-            `Channel "${channelId}" not found`
-        );
+    startMonitoring() {
+        setInterval(async () => {
+            for (const server of servers) {
+                const data = await fetchServerInfo(server);
+                const embed = buildServerEmbed(server.id, data);
+                
+                // تحديث الرسائل المخزنة
+                this.updateServerMessage(server.id, embed);
+            }
+        }, updateInterval);
     }
 
-    const message =
-        await channel.messages.fetch(messageId);
-
-    if (!message) {
-        throw new Error(
-            `Message "${messageId}" not found`
-        );
+    async updateServerMessage(serverId, embed) {
+        // هنا يمكنك تحديث رسالة محددة في قناة معينة
+        // مثلاً: 
+        // const channel = await this.client.channels.fetch('ID_القناة');
+        // const message = await channel.messages.fetch(this.messages.get(serverId));
+        // await message.edit({ embeds: [embed] });
     }
 
-    const data =
-        await queryGameServer(server);
-
-    await message.edit({
-        embeds: [
-            createServerEmbed(server, data)
-        ],
-        components: [
-            createServerButtons(server)
-        ]
-    });
-
-    return data;
+    async sendInitialMessages(channelId) {
+        const channel = await this.client.channels.fetch(channelId);
+        
+        for (const server of servers) {
+            const data = await fetchServerInfo(server);
+            const embed = buildServerEmbed(server.id, data);
+            const message = await channel.send({ embeds: [embed] });
+            this.messages.set(server.id, message.id);
+        }
+    }
 }
+
+module.exports = ServerMonitorService;

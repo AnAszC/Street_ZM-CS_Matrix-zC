@@ -1,41 +1,19 @@
-import {
-    GAME_SERVERS
-} from '../../services/gameServers/serverConfig.js';
+const { fetchServerInfo } = require('../../services/gameServers/gameQueryService');
+const { buildServerEmbed } = require('../../services/gameServers/serverEmbed');
+const { servers } = require('../../services/gameServers/serverConfig');
 
-import {
-    queryGameServer
-} from '../../services/gameServers/gameQueryService.js';
-
-import {
-    createServerEmbed,
-    createServerButtons
-} from '../../services/gameServers/serverEmbed.js';
-
-export default {
-
-    name: 'server_refresh_zombie-plague',
+module.exports = {
+    customId: /^refresh_server_.+$/,
 
     async execute(interaction) {
-
-        const server =
-            GAME_SERVERS.find(
-                item => item.id === 'zombie-plague'
-            );
-
-        if (!server) return;
+        const serverId = interaction.customId.replace('refresh_server_', '');
+        const serverConfig = servers.find(s => s.id === serverId);
 
         await interaction.deferUpdate();
 
-        const data =
-            await queryGameServer(server);
+        const serverData = await fetchServerInfo(serverConfig);
+        const embed = buildServerEmbed(serverId, serverData);
 
-        await interaction.message.edit({
-            embeds: [
-                createServerEmbed(server, data)
-            ],
-            components: [
-                createServerButtons(server)
-            ]
-        });
+        await interaction.editReply({ embeds: [embed] });
     }
 };

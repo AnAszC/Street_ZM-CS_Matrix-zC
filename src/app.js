@@ -17,6 +17,8 @@ import { initializeMusic } from './services/music/riffySetup.js';
 import { shutdownMusic } from './services/music/playerHandler.js';
 import pkg from '../package.json' with { type: 'json' };
 import { EXPECTED_SCHEMA_VERSION, EXPECTED_SCHEMA_LABEL } from './config/database/schemaVersion.js';
+// 🟢 إضافة استيراد مراقبة الخوادم
+import ServerMonitorService from './services/gameServers/serverMonitorService.js';
 
 class TitanBot extends Client {
   constructor() {
@@ -46,6 +48,7 @@ class TitanBot extends Client {
     this.cooldowns = new Collection();
     this.db = null;
     this.rest = new REST({ version: '10' }).setToken(config.bot.token);
+    this.serverMonitor = null;  // مراقبة الخوادم
   }
 
   async start() {
@@ -103,6 +106,22 @@ class TitanBot extends Client {
       );
       
       this.setupCronJobs();
+      
+      // 🟢 تفعيل مراقبة الخوادم
+      this.once('ready', () => {
+        try {
+          logger.info('🔄 جاري تشغيل مراقبة الخوادم...');
+          this.serverMonitor = new ServerMonitorService(this);
+        
+          const CHANNEL_ID = process.env.SERVER_STATUS_CHANNEL || 'ID_القناة_هنا';
+          this.serverMonitor.sendInitialMessages(CHANNEL_ID);
+        
+          logger.info('✅ تم تشغيل مراقبة الخوادم بنجاح');
+        } catch (error) {
+          logger.error('❌ فشل تشغيل مراقبة الخوادم:', error);
+        }
+      });
+      
     } catch (error) {
       logger.error('Failed to start bot:', error);
       process.exit(1);
@@ -343,6 +362,16 @@ class TitanBot extends Client {
       logger.info('✅ Cron jobs stopped');
 
       logger.info('Stopping music players...');
+
+      // 🟢 إيقاف مراقبة الخوادم
+      if (this.serverMonitor) {
+        logger.info('Stopping server monitor...');
+        if (this.serverMonitor.intervalId) {
+          clearInterval(this.serverMonitor.intervalId);
+        }
+        logger.info('✅ Server monitor stopped');
+      }
+      
       await shutdownMusic(this);
       logger.info('✅ Music players stopped');
 

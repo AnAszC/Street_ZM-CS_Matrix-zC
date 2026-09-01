@@ -1,85 +1,31 @@
-import { GameDig } from 'gamedig';
+const { query } = require('gamedig');
 
-export async function queryGameServer(server) {
+async function fetchServerInfo(serverConfig) {
     try {
-        const state = await GameDig.query({
-            type: server.game,
-            host: server.host,
-            port: server.port,
-
-            socketTimeout: 3000,
-            attemptTimeout: 5000,
-            maxAttempts: 1
+        const info = await query({
+            type: serverConfig.type || 'css',
+            host: serverConfig.ip,
+            port: serverConfig.port
         });
 
         return {
             online: true,
-
-            name: state.name || server.name,
-
-            map: state.map || 'Unknown',
-
-            players: state.players?.length ?? 0,
-
-            maxPlayers: state.maxplayers ?? 0,
-
-            playersList: (state.players || []).map(player => ({
-                name: player.name || 'Unknown',
-                score: player.raw?.score ?? player.score ?? 0,
-                time: player.raw?.time ?? player.time ?? 0
-            })),
-
-            game: state.raw?.game || state.name || 'Counter-Strike 1.6',
-
-            version: state.version || '',
-
-            ping: state.ping ?? 0,
-
-            country: server.country,
-
-            host: server.host,
-
-            port: server.port,
-
-            joinUrl: server.joinUrl,
-
-            gameTrackerUrl: server.gameTrackerUrl,
-
-            error: null
+            name: info.name,
+            map: info.map,
+            players: info.players.length,
+            maxPlayers: info.maxplayers,
+            playerList: info.players.map(p => p.name).slice(0, 20)
         };
-
     } catch (error) {
-
         return {
             online: false,
-
-            name: server.name,
-
-            map: null,
-
+            name: serverConfig.name,
+            map: 'غير متاح',
             players: 0,
-
             maxPlayers: 0,
-
-            playersList: [],
-
-            game: 'Counter-Strike 1.6',
-
-            version: '',
-
-            ping: null,
-
-            country: server.country,
-
-            host: server.host,
-
-            port: server.port,
-
-            joinUrl: server.joinUrl,
-
-            gameTrackerUrl: server.gameTrackerUrl,
-
-            error: error?.message || 'Unknown query error'
+            playerList: []
         };
     }
 }
+
+module.exports = { fetchServerInfo };

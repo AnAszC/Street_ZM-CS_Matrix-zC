@@ -417,6 +417,20 @@ try {
       });
     });
   };
+
+const ServerMonitorService = require('./services/gameServers/serverMonitorService');
+// داخل دالة ready
+client.once('ready', () => {
+    console.log('✅ البوت جاهز!');
+    
+    // تشغيل خدمة مراقبة الخوادم
+    const monitor = new ServerMonitorService(client);
+    
+    // إرسال الرسائل الأولية في قناة محددة
+    monitor.sendInitialMessages('ID_القناة_هنا');
+});
+
+
   
   setupShutdown();
   bot.start().catch((error) => {

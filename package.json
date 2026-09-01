@@ -19,7 +19,8 @@
     "@discordjs/rest": "^2.6.1",
     "axios": "^1.15.2",
     "discord.js": "^14.26.4",
-    "gamedig": "^4.0.0",
+    "gamedig": "^4.3.2",
+    "cheerio": "^1.0.0-rc.12"
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "node-cron": "^4.2.1",

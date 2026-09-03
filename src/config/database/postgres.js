@@ -33,6 +33,7 @@ const allowedTableIdentifiers = new Set([
     'guilds',
     'users',
     'guild_users',
+    'game_servers',
     'birthdays',
     'giveaways',
     'ticket_data',

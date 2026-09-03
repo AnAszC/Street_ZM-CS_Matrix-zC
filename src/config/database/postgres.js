@@ -5,6 +5,15 @@ const configuredTables = {
     guilds: 'guilds',
     users: 'users',
     guild_users: 'guild_users',
+    application_roles: 'application_roles',
+
+    verification_audit: 'verification_audit',
+
+    game_servers: 'game_servers',
+
+    temp_data: 'temp_data',
+
+    cache_data: 'cache_data',
     birthdays: 'birthdays',
     giveaways: 'giveaways',
     tickets: 'ticket_data',

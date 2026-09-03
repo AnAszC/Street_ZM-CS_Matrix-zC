@@ -275,6 +275,7 @@ export const UPDATE_TIMESTAMP_FUNCTION = `
  */
 export const triggerDefinitions = [
     { name: 'update_guilds_updated_at', table: t.guilds },
+    { name: 'update_game_servers_updated_at', table: t.game_servers },
     { name: 'update_users_updated_at', table: t.users },
     { name: 'update_welcome_configs_updated_at', table: t.welcome_configs },
     { name: 'update_leveling_configs_updated_at', table: t.leveling_configs },

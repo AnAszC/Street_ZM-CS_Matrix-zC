@@ -173,6 +173,36 @@ export const tableStatements = [
         expires_at TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`,
+
+    `CREATE TABLE IF NOT EXISTS ${t.game_servers} (
+        id SERIAL PRIMARY KEY,
+        guild_id VARCHAR(20) NOT NULL,
+        name VARCHAR(100) NOT NULL,
+        host VARCHAR(255) NOT NULL,
+        port INTEGER NOT NULL CHECK (port BETWEEN 1 AND 65535),
+        game_type VARCHAR(50) NOT NULL,
+        emoji VARCHAR(16) DEFAULT '🎮',
+
+        channel_id VARCHAR(20),
+        message_id VARCHAR(20),
+
+        monitor_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+        alert_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+
+        last_online BOOLEAN,
+        last_players INTEGER DEFAULT 0,
+        last_max_players INTEGER DEFAULT 0,
+        last_map VARCHAR(255),
+        last_ping INTEGER,
+        last_checked_at TIMESTAMP,
+
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+        FOREIGN KEY (guild_id) REFERENCES ${t.guilds}(id) ON DELETE CASCADE,
+
+        UNIQUE (guild_id, host, port)
+    )`,
 ];
 
 export const indexStatements = [

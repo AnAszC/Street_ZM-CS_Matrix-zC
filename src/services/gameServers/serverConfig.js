@@ -1,24 +1,13 @@
-module.exports = {
-    servers: [
-        {
-            id: 'zombie_plague',
-            name: 'Zombie Plague',
-            ip: '74.91.113.180',
-            port: 27015,
-            type: 'css', // نوع اللعبة لـ gamedig
-            emoji: '🧟'
-        },
-        {
-            id: 'zombie_escape',
-            name: 'Zombie Escape',
-            ip: '74.91.113.180',
-            port: 27021,
-            type: 'css',
-            emoji: '🏃'
-        }
-    ],
-    updateInterval: 300000, // 5 دقائق
+export const gameServerConfig = {
+    // فحص الخوادم كل 5 دقائق
+    updateInterval: 300000,
+
+    // الحد الأقصى لعرض أسماء اللاعبين
     maxPlayersDisplay: 20,
+
+    // لون Embed عندما يكون الخادم Online
     embedColorOnline: 0x00FF00,
+
+    // لون Embed عندما يكون الخادم Offline
     embedColorOffline: 0xFF0000
 };

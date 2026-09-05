@@ -93,6 +93,27 @@ class TitanBot extends Client {
       await this.login(this.config.bot.token);
       startupLog('Discord login successful');
       
+      this.once('ready', () => {
+        try {
+         logger.info('🔄 جاري تشغيل مراقبة خوادم الألعاب...');
+
+          if (!this.serverMonitor) {
+            this.serverMonitor = new ServerMonitorService(this);
+          }
+
+        logger.info('✅ تم تشغيل مراقبة خوادم الألعاب بنجاح');
+        } catch (error) {
+             logger.error(
+               '❌ فشل تشغيل مراقبة خوادم الألعاب:',
+               error
+             );
+        }
+      });
+
+
+    
+
+
       startupLog('Registering slash commands globally...');
       await this.registerCommands();
       startupLog('Slash commands registration complete');
@@ -107,20 +128,7 @@ class TitanBot extends Client {
       
       this.setupCronJobs();
       
-      // 🟢 تفعيل مراقبة الخوادم
-      this.once('ready', () => {
-        try {
-          logger.info('🔄 جاري تشغيل مراقبة الخوادم...');
-          this.serverMonitor = new ServerMonitorService(this);
-        
-          const CHANNEL_ID = process.env.SERVER_STATUS_CHANNEL || 'ID_القناة_هنا';
-          this.serverMonitor.sendInitialMessages(CHANNEL_ID);
-        
-          logger.info('✅ تم تشغيل مراقبة الخوادم بنجاح');
-        } catch (error) {
-          logger.error('❌ فشل تشغيل مراقبة الخوادم:', error);
-        }
-      });
+  
       
     } catch (error) {
       logger.error('Failed to start bot:', error);
@@ -361,19 +369,22 @@ class TitanBot extends Client {
       cron.getTasks().forEach(task => task.stop());
       logger.info('✅ Cron jobs stopped');
 
+      
       logger.info('Stopping music players...');
-
-      // 🟢 إيقاف مراقبة الخوادم
-      if (this.serverMonitor) {
-        logger.info('Stopping server monitor...');
-        if (this.serverMonitor.intervalId) {
-          clearInterval(this.serverMonitor.intervalId);
-        }
-        logger.info('✅ Server monitor stopped');
-      }
       
       await shutdownMusic(this);
       logger.info('✅ Music players stopped');
+
+
+      // 🟢 إيقاف مراقبة الخوادم
+      if (this.serverMonitor) {
+          logger.info('Stopping server monitor...');
+
+          this.serverMonitor.stopMonitoring();
+
+          logger.info('✅ Server monitor stopped');
+      }
+
 
       if (this.webServer) {
         logger.info('Closing web server...');

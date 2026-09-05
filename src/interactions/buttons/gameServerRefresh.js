@@ -1,19 +1,57 @@
-const { fetchServerInfo } = require('../../services/gameServers/gameQueryService');
-const { buildServerEmbed } = require('../../services/gameServers/serverEmbed');
-const { servers } = require('../../services/gameServers/serverConfig');
+import { fetchServerInfo } from '../../services/gameServers/gameQueryService.js';
+import { buildServerEmbed } from '../../services/gameServers/serverEmbed.js';
+import { getGameServerById } from '../../services/gameServers/gameServerDatabase.js';
 
-module.exports = {
-    customId: /^refresh_server_.+$/,
+export default {
+    name: 'refresh_server',
 
-    async execute(interaction) {
-        const serverId = interaction.customId.replace('refresh_server_', '');
-        const serverConfig = servers.find(s => s.id === serverId);
+    async execute(interaction, client, args) {
+        const [serverId] = args;
+
+        if (!serverId) {
+            await interaction.reply({
+                content: '❌ معرف السيرفر غير موجود.',
+                ephemeral: true
+            });
+            return;
+        }
 
         await interaction.deferUpdate();
 
-        const serverData = await fetchServerInfo(serverConfig);
-        const embed = buildServerEmbed(serverId, serverData);
+        try {
+            const server = await getGameServerById(serverId);
 
-        await interaction.editReply({ embeds: [embed] });
+            if (!server) {
+                await interaction.editReply({
+                    content: '❌ لم يتم العثور على السيرفر في قاعدة البيانات.',
+                    embeds: [],
+                    components: []
+                });
+                return;
+            }
+
+            const serverData = await fetchServerInfo(server);
+
+            const embed = buildServerEmbed(
+                server,
+                serverData
+            );
+
+            await interaction.editReply({
+                embeds: [embed]
+            });
+
+        } catch (error) {
+            console.error(
+                `[GameServer Refresh] Failed for ${serverId}:`,
+                error
+            );
+
+            await interaction.editReply({
+                content: '❌ حدث خطأ أثناء تحديث معلومات السيرفر.',
+                embeds: [],
+                components: []
+            });
+        }
     }
 };

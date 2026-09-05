@@ -1,42 +1,129 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { fetchServerInfo } = require('../../services/gameServers/gameQueryService');
-const { buildServerEmbed } = require('../../services/gameServers/serverEmbed');
-const { servers } = require('../../services/gameServers/serverConfig');
+import {
+    SlashCommandBuilder,
+    ModalBuilder,
+    TextInputBuilder,
+    TextInputStyle,
+    ActionRowBuilder
+} from 'discord.js';
 
-module.exports = {
+export default {
     data: new SlashCommandBuilder()
-        .setName('gameservers')
-        .setDescription('عرض معلومات خوادم الألعاب')
-        .addStringOption(option =>
-            option.setName('الخادم')
-                .setDescription('اختر الخادم')
-                .setRequired(true)
-                .addChoices(
-                    ...servers.map(s => ({ name: s.name, value: s.id }))
+        .setName('gameserver')
+        .setDescription('إدارة خوادم الألعاب')
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('add')
+                .setDescription('إضافة خادم ألعاب جديد')
+        )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('list')
+                .setDescription('عرض خوادم الألعاب')
+        )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('status')
+                .setDescription('عرض حالة خادم')
+                .addIntegerOption(option =>
+                    option
+                        .setName('id')
+                        .setDescription('معرف الخادم')
+                        .setRequired(true)
+                )
+        )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('remove')
+                .setDescription('حذف خادم ألعاب')
+                .addIntegerOption(option =>
+                    option
+                        .setName('id')
+                        .setDescription('معرف الخادم')
+                        .setRequired(true)
+                )
+        )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('edit')
+                .setDescription('تعديل خادم ألعاب')
+                .addIntegerOption(option =>
+                    option
+                        .setName('id')
+                        .setDescription('معرف الخادم')
+                        .setRequired(true)
                 )
         ),
 
     async execute(interaction) {
-        await interaction.deferReply();
+        const subcommand = interaction.options.getSubcommand();
 
-        const serverId = interaction.options.getString('الخادم');
-        const serverConfig = servers.find(s => s.id === serverId);
-        const serverData = await fetchServerInfo(serverConfig);
+        if (subcommand === 'add') {
+            const modal = new ModalBuilder()
+                .setCustomId('gameserver_add')
+                .setTitle('🎮 إضافة Game Server');
 
-        const embed = buildServerEmbed(serverId, serverData);
+            const nameInput = new TextInputBuilder()
+                .setCustomId('server_name')
+                .setLabel('اسم السيرفر')
+                .setPlaceholder('مثال: CSMatrix-zC Zombie Server')
+                .setStyle(TextInputStyle.Short)
+                .setRequired(true)
+                .setMaxLength(100);
 
-        // زر التحديث
-        const row = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId(`refresh_server_${serverId}`)
-                    .setLabel('🔄 تحديث')
-                    .setStyle(ButtonStyle.Primary)
+            const hostInput = new TextInputBuilder()
+                .setCustomId('server_host')
+                .setLabel('IP / Host')
+                .setPlaceholder('مثال: 51.38.123.45')
+                .setStyle(TextInputStyle.Short)
+                .setRequired(true)
+                .setMaxLength(255);
+
+            const portInput = new TextInputBuilder()
+                .setCustomId('server_port')
+                .setLabel('Port')
+                .setPlaceholder('مثال: 27015')
+                .setStyle(TextInputStyle.Short)
+                .setRequired(true)
+                .setMaxLength(5);
+
+            const gameTypeInput = new TextInputBuilder()
+                .setCustomId('game_type')
+                .setLabel('Game Type')
+                .setPlaceholder('cs16')
+                .setValue('cs16')
+                .setStyle(TextInputStyle.Short)
+                .setRequired(true)
+                .setMaxLength(50);
+
+            const emojiInput = new TextInputBuilder()
+                .setCustomId('server_emoji')
+                .setLabel('Emoji')
+                .setPlaceholder('🎮')
+                .setValue('🎮')
+                .setStyle(TextInputStyle.Short)
+                .setRequired(false)
+                .setMaxLength(16);
+
+            modal.addComponents(
+                new ActionRowBuilder().addComponents(nameInput),
+                new ActionRowBuilder().addComponents(hostInput),
+                new ActionRowBuilder().addComponents(portInput),
+                new ActionRowBuilder().addComponents(gameTypeInput),
+                new ActionRowBuilder().addComponents(emojiInput)
             );
 
-        await interaction.editReply({ 
-            embeds: [embed], 
-            components: [row] 
+            await interaction.showModal(modal);
+            return;
+        }
+
+        /*
+         * سيتم تنفيذ list / status / edit / remove
+         * في الخطوات التالية.
+         */
+
+        await interaction.reply({
+            content: `⚙️ الأمر \`/gameserver ${subcommand}\` سيتم تفعيله قريبًا.`,
+            ephemeral: true
         });
     }
 };
